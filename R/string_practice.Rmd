@@ -1,0 +1,40 @@
+---
+title: "sting practice"
+author: "Meagan Brown"
+date: '2022-08-16'
+output: html_document
+---
+```{r}
+library(tidyverse)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+alarm_report <- tibble::tribble(
+         ~date,           ~building,                                              ~alarm_message,
+  "2020-03-14", "Engineering-North", "10:02am – HVAC system down, facilities management alerted",
+  "2020-03-15",         "Bren Hall",                    "8:24am – Elevator North out of service",
+  "2020-04-10", "Engineering-South",     "12:41am – Fire alarm, UCSB fire responded and cleared",
+  "2020-04-18",        "Engr-North",     "9:58pm – Campus point emergency siren, UCPD responded"
+  ) %>% 
+
+# Replace the “Engr” with “Engineering” in the building column
+mutate(building = str_replace(building, 
+                   pattern = "Engr", 
+                   replacement = "Engineering"))  %>% 
+# Separate the building column into two separate columns, building and wing, separated at the dash
+separate(building, c("building","wing"), sep ="-") %>% 
+# Only keep observations with the word “responded” in the alarm_message column
+filter(str_detect(alarm_message, pattern = "responded")) %>% 
+# Separate the message time from the rest of the message by separating at --
+separate(alarm_message, c("alarm_message", "time"), sep = "–") %>% 
+  rename(c("alarm_message" = time,
+           "time" = alarm_message)) %>% 
+# Convert the date column to a Date class using lubridate
+mutate(date = ymd(date))
+
+```
+
